@@ -102,6 +102,37 @@ app.use((req, res, next) => {
     if (BOT_IP_WHITELIST.includes(ip)) return next();
     return globalLimiter(req, res, next);
 });
+app.get("/api/v1", async (req, res) => {
+    try {
+        const { url } = req.query;
+        if (!url) return res.status(400).json({ status: false, message: "URL is required" });
+
+        // Paksa pake MASTER_FP buat nembak ke internal, 
+        // ini biar lolos middleware validator di bawahnya kalau dipanggil internal.
+        const useFp = MASTER_FP; 
+
+        console.log(chalk.magenta(`[PROXY] Request API dari IP: ${req.ip.replace("::ffff:", "")}`));
+
+        const response = await axios.get(`${BASE_URL}/v1/api/convert`, {
+            params: {
+                url: url,
+                fp: useFp // Pake MASTER_FP terus sesuai mau lo
+            },
+            headers: {
+                "X-Fingerprint": useFp // Pastiin header ini juga terkirim
+            }
+        });
+
+        res.json(response.data);
+
+    } catch (err) {
+        console.error(chalk.red("🔥 Proxy Error:"), err.message);
+        res.status(500).json({ 
+            status: false, 
+            message: "Internal Server Error atau Endpoint Internal tidak merespon." 
+        });
+    }
+});
 
 // =======================
 // FINGERPRINT CHECK
