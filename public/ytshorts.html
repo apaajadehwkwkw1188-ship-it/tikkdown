@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YT Shorts Downloader - No Watermark</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7663137588714102" crossorigin="anonymous"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #f0f4ff 0%, #f8fafc 100%);
+        }
+        .card {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+        }
+        .btn-gradient {
+            background: linear-gradient(to right, #6366f1, #a855f7);
+        }
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #6366f1;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        #side-menu {
+            transition: transform 0.3s ease-in-out;
+        }
+        .menu-open {
+            transform: translateX(0) !important;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col items-center p-4 sm:p-8 relative overflow-x-hidden">
+
+<nav class="w-full max-w-4xl flex justify-end mb-4">
+    <button onclick="toggleMenu()" class="p-3 bg-white rounded-xl shadow-sm z-50">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/>
+        </svg>
+    </button>
+</nav>
+
+<div id="menu-overlay" onclick="toggleMenu()" class="hidden fixed inset-0 bg-black/20 z-[60]"></div>
+
+<div id="side-menu" class="fixed top-0 right-0 h-full w-64 bg-white shadow-2xl z-[70] translate-x-full p-6 flex flex-col">
+    <div class="flex justify-between items-center mb-10">
+        <span class="font-bold text-lg text-gray-800">Menu</span>
+        <button onclick="toggleMenu()" class="text-gray-400">✖</button>
+    </div>
+
+    <nav class="flex flex-col gap-4">
+        <a href="/" class="p-3 bg-indigo-50 text-indigo-600 rounded-xl font-semibold">🏠 Home</a>
+        <a href="/api" class="p-3 text-gray-600 hover:bg-gray-50 rounded-xl">🔌 API</a>
+        <a href="https://t.me/IkyyExecutive" target="_blank" class="p-3 text-gray-600 hover:bg-gray-50 rounded-xl">💬 Contact</a>
+    </nav>
+
+    <div class="mt-auto pt-6 border-t">
+        <p class="text-[10px] text-gray-400 text-center uppercase">YTShort v1.0.0</p>
+    </div>
+</div>
+
+<header class="text-center mb-8">
+    <div class="p-3 bg-white rounded-2xl mb-4 inline-block">🎬</div>
+    <h1 class="text-3xl font-extrabold text-indigo-600">YT Shorts Downloader</h1>
+    <p class="text-gray-500">Cepat, Mudah, & Tanpa Ribet</p>
+</header>
+
+<main class="w-full max-w-md space-y-4">
+
+<div class="card p-6">
+    <input id="url" class="w-full bg-gray-50 border rounded-xl px-4 py-4 mb-4"
+        placeholder="Tempel link YouTube Shorts...">
+
+    <button onclick="process()" class="btn-gradient w-full text-white py-4 rounded-xl font-bold">
+        🚀 Mulai Download
+    </button>
+
+    <div id="status" class="text-center mt-4 text-sm"></div>
+
+    <div id="loading" class="hidden flex justify-center mt-4">
+        <div class="loader"></div>
+    </div>
+</div>
+
+<div id="result" class="hidden card p-5">
+    <video id="video" controls class="w-full rounded-xl mb-3"></video>
+
+    <h2 id="title" class="font-bold text-sm"></h2>
+    <p id="author" class="text-indigo-600 text-xs mb-4"></p>
+
+    <button id="downloadBtn" class="w-full py-3 bg-green-500 text-white rounded-lg font-bold text-xs">
+        DOWNLOAD
+    </button>
+</div>
+
+</main>
+
+<script>
+function toggleMenu() {
+    document.getElementById('side-menu').classList.toggle('menu-open');
+    document.getElementById('menu-overlay').classList.toggle('hidden');
+}
+
+async function process() {
+    const url = document.getElementById("url").value;
+    const status = document.getElementById("status");
+    const loading = document.getElementById("loading");
+    const result = document.getElementById("result");
+
+    if (!url) return alert("Masukkan link!");
+
+    status.innerText = "⏳ Processing...";
+    loading.classList.remove("hidden");
+    result.classList.add("hidden");
+
+    try {
+        const { data } = await axios.get("/api/v2/ytshorts", { params: { url } });
+
+        loading.classList.add("hidden");
+
+        if (!data.status) {
+            status.innerText = "❌ Gagal";
+            return;
+        }
+
+        const v = data.result || data;
+
+        const videoUrl =
+            v.video?.url ||
+            v.video ||
+            v.audio?.url ||
+            v.url;
+
+        document.getElementById("video").src = videoUrl;
+        document.getElementById("title").innerText = v.title || "YT Shorts";
+        document.getElementById("author").innerText = "@YouTube Shorts";
+
+        document.getElementById("downloadBtn").onclick = () => {
+            window.location.href = `/api/v2/download?url=${encodeURIComponent(videoUrl)}&filename=ytshorts.mp4`;
+        };
+
+        result.classList.remove("hidden");
+        status.innerText = "✅ Siap download";
+
+    } catch (err) {
+        console.log(err);
+        loading.classList.add("hidden");
+        status.innerText = "❌ Server error";
+    }
+}
+</script>
+
+</body>
+</html>
