@@ -19,7 +19,7 @@ const BOT_IP_WHITELIST = ["127.0.0.1", "::1"];
 const MASTER_FP = "TW96aWxsYS81LjAgKExpbnV4OyBBbmRyb2lkIDEwOyBLKSBBcHBsZVdlYktpdC81MzcuMzYgKEtIVE1MLCBsaWtlIEdlY2tvKSBDaHJvbWUvMTM5LjAuMC4wIE1vYmlsZSBTYWZhcmkvNTM3LjM2MzYwQXNpYS9KYWthcnRh";
 
 // 🔥 PENTING (ini tadi lu lupa)
-const BASE_URL = "https://v1.tikkdown.my.id";
+const BASE_URL = "https://v1-tikkdown.vercel.app";
 
 // =======================
 let blockedIPs = new Set();
